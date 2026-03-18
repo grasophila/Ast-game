@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who are you？</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            background:#0a0a0a;
+            background-image: 
+                radial-gradient(#1a1a1a 1px, transparent 1px),
+                linear-gradient(rgba(10,10,10,0.8) 1px, transparent 1px);
+            background-size: 4px 4px, 100% 2px;
+            color:#e0e0e0;
+            font-family: "Consolas", "Courier New", "微软雅黑", monospace;
+            line-height:1.6;
+            padding:10px;
+            overflow-x:hidden;
+        }
+        body::before{
+            content:"";
+            position:fixed;
+            top:0;left:0;
+            width:100%;height:100%;
+            background:linear-gradient(transparent 50%, rgba(0,0,0,0.25) 50%);
+            background-size:100% 4px;
+            pointer-events:none;
+            z-index:999;
+            animation: scanline 6s linear infinite;
+        }
+        @keyframes scanline{
+            0%{transform:translateY(0);}
+            100%{transform:translateY(4px);}
+        }
+
+        .container{
+            max-width:720px;
+            margin:20px auto;
+            background:#121212;
+            border:3px solid #333;
+            border-radius:2px;
+            padding:20px;
+            box-shadow:0 0 20px rgba(0,0,0,0.9), inset 0 0 30px rgba(0,0,0,0.6);
+            position:relative;
+        }
+
+        /* 封面 */
+        .cover{
+            text-align:center;
+            padding:60px 20px;
+            display:block;
+        }
+        .cover-title{
+            font-size:40px;
+            letter-spacing:4px;
+            color:#fff;
+            text-shadow:0 0 10px rgba(100,100,200,0.4);
+            margin-bottom:20px;
+        }
+        .cover-author{
+            font-size:16px;
+            color:#aaa;
+            margin-bottom:60px;
+        }
+        .start-btn{
+            padding:14px 30px;
+            background:#1a1a1a;
+            color:#ccc;
+            border:2px solid #444;
+            font-size:18px;
+            cursor:pointer;
+            font-family:inherit;
+            transition:all 0.2s ease;
+        }
+        .start-btn:hover{
+            border-color:#888;
+            color:#fff;
+            background:#222;
+        }
+
+        /* 游戏主界面 */
+        .game{
+            display:none;
+        }
+        .title{
+            text-align:center;
+            font-size:26px;
+            margin-bottom:20px;
+            color:#f0f0f0;
+            text-shadow:1px 1px 2px rgba(0,0,0,0.8), 0 0 5px rgba(200,200,255,0.2);
+            border-bottom:2px solid #222;
+            padding-bottom:10px;
+            letter-spacing:2px;
+        }
+
+        .char-box{
+            display:flex;
+            align-items:center;
+            gap:15px;
+            margin-bottom:20px;
+            padding:12px;
+            background:#181818;
+            border:2px solid #2a2a2a;
+            border-radius:2px;
+            box-shadow:inset 0 0 10px rgba(0,0,0,0.7);
+        }
+        
+        /* ==============================================
+           【角色立绘图片区域】
+           你只需要把 url 换成你的图片链接即可
+           支持：网络链接 / GitHub 仓库里的图片路径
+        ============================================== */
+        .avatar{
+            width:110px;
+            height:150px;
+            background:#222;
+            border:2px solid #333;
+            border-radius:2px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#666;
+            font-size:12px;
+            background-size:cover;
+            background-position:center;
+            box-shadow:inset 0 0 8px rgba(0,0,0,0.8);
+            transition: background-image 0.5s ease;
+        }
+
+        .status-area{flex:1;display:flex;flex-direction:column;gap:15px;}
+        .status-item{width:100%;}
+        .status-name{
+            font-size:15px;
+            margin-bottom:6px;
+            color:#ccc;
+            text-transform:uppercase;
+            letter-spacing:1px;
+        }
+        .bar-bg{
+            width:100%;
+            height:20px;
+            background:#111;
+            border:2px solid #333;
+            border-radius:2px;
+            overflow:hidden;
+            box-shadow:inset 0 0 6px rgba(0,0,0,0.8);
+        }
+        .san-bar-fill{
+            height:100%;
+            width:100%;
+            background:linear-gradient(90deg, #444, #666);
+            transition:width 0.3s ease, background 0.3s ease;
+        }
+        .day-box{
+            width:100%;
+            height:20px;
+            background:#111;
+            border:2px solid #333;
+            border-radius:2px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#ccc;
+            font-size:14px;
+            letter-spacing:1px;
+            box-shadow:inset 0 0 6px rgba(0,0,0,0.8);
+        }
+        .status-text{
+            font-size:13px;
+            color:#888;
+            text-align:right;
+            margin-top:4px;
+        }
+
+        .scene{
+            margin:20px 0;
+            font-size:15px;
+            min-height:120px;
+            padding:18px;
+            background:#111;
+            border:3px solid #222;
+            border-radius:2px;
+            box-shadow:inset 0 0 15px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.5);
+            position:relative;
+            white-space:pre-line;
+            color:#d0d0d0;
+            letter-spacing:0.5px;
+        }
+        .scene-tip{
+            text-align:center;
+            color:#777;
+            font-size:12px;
+            margin-top:-10px;
+            margin-bottom:10px;
+        }
+
+        .choice-box{
+            margin-top:25px;
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+        }
+        .choice-btn{
+            display:block;
+            width:100%;
+            padding:12px 16px;
+            background:#1a1a1a;
+            color:#ccc;
+            border:2px solid #333;
+            border-radius:2px;
+            font-size:15px;
+            font-family:inherit;
+            cursor:pointer;
+            transition:all 0.2s ease;
+            text-align:left;
+            box-shadow:inset 0 0 5px rgba(0,0,0,0.6);
+        }
+        .choice-btn:hover{
+            background:#222;
+            border-color:#555;
+            color:#fff;
+            box-shadow:0 0 8px rgba(100,100,150,0.2);
+        }
+        .choice-btn:active{
+            background:#151515;
+            border-color:#444;
+            transform:translateY(1px);
+        }
+
+        .san-low .san-bar-fill{
+            background:linear-gradient(90deg, #600, #a00);
+            box-shadow:0 0 8px rgba(200,0,0,0.4);
+        }
+        .san-low .status-text{
+            color:#c00;
+            font-weight:bold;
+        }
+
+        @media (max-width: 480px) {
+            .container{padding:15px;}
+            .cover-title{font-size:32px;}
+            .char-box{gap:10px;padding:10px;}
+            .avatar{width:90px;height:130px;}
+            .scene{padding:15px;font-size:14px;}
+            .choice-btn{padding:10px 14px;font-size:14px;}
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 封面 -->
+    <div class="cover" id="cover">
+        <div class="cover-title">Who are you？</div>
+        <div class="cover-author">制作者：风灵烟</div>
+        <button class="start-btn" id="startBtn">点击开始游戏</button>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div class="game" id="game">
+        <div class="title">Who are you？</div>
+
+        <div class="char-box">
+            <!-- 角色立绘显示位置 -->
+            <div class="avatar" id="avatar">角色立绘</div>
+            
+            <div class="status-area">
+                <div class="status-item">
+                    <div class="status-name">SANITY</div>
+                    <div class="bar-bg">
+                        <div class="san-bar-fill" id="sanBar"></div>
+                    </div>
+                    <div class="status-text" id="sanText">100 / 100</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-name">DAYS</div>
+                    <div class="day-box" id="dayBox">Day 1</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="scene" class="scene"></div>
+        <div class="scene-tip" id="sceneTip">点击继续 ↵</div>
+        <div id="choice" class="choice-box"></div>
+    </div>
+</div>
+
+<script>
+// ====================== 全局状态 ======================
+let stats = { 
+    san: 100, 
+    maxSan: 100,
+    day: 1
+};
+
+// 分页系统
+let currentLines = [];
+let lineIndex = 0;
+let currentSceneKey = "";
+let isChoosing = false;
+
+// ======================================================
+// 【角色立绘图片配置 —— 你只改这里！】
+// 把 url 替换成你的图片链接即可
+// 支持：
+// 1. 网络直链 https://xxx.png
+// 2. GitHub 仓库相对路径 如 ./img/normal.png
+// ======================================================
+const avatarConfig = [
+    { min: 70, max: 100, url: "", name: "正常" },
+    { min: 30, max: 69,  url: "", name: "不安" },
+    { min: 0,  max: 29,  url: "", name: "崩坏" }
+];
+
+// ====================== 剧情 ======================
+const story = {
+    start: {
+        lines: [
+            "你睁开眼，黑暗的空房间里只能听见自己沉闷的心跳声。",
+            "你试探性在房间里摸索，没走几步便撞到墙，吃痛扭过身后后腰却不幸地撞上金属门把手。",
+            "你呲牙咧嘴地伸手去摸把手，轻轻一拧后便猝不及防地从房间里摔出。踉跄几下后，你直起身。"
+        ],
+        options: [
+            { text: "继续向前走", next: "street" }
+        ]
+    },
+    street: {
+        lines: [
+            "外面的世界并不比房间里明亮太多，朦胧的月色中，街边仅剩的一盏还在工作的路灯倔强地忽闪着昏黄的灯光。",
+            "一阵凉风吹过，你双手插进大衣外套的兜里，漫无目的地在陌生的世界里游荡，口鼻呼出的热气团团上涌，飘忽着遮挡住你的视线。",
+            "扭曲着面目又突然化为精致神情的“人类”从你身旁经过，你僵硬地迈开腿，无视身侧吊在路灯上随风飘动的干尸，在那栋窗户缝隙里透出灯光的房前站定。",
+            "心跳声在你耳边鼓动，你莫名感受到一股理所当然的安心感。你再次呼出一口气。",
+            "你伸出手，月光下的手指惨白。咚咚，木质表面的房门被敲响。",
+            "短暂又突兀的敲击声结束后，世界又陷入一片死寂。你歪了歪脑袋，无比确定里面一定有你寻找的那个人。"
+        ],
+        options: [
+            { text: "A. 继续敲门", next: "knock_again" },
+            { text: "B. 出声呼唤", next: "call_name" }
+        ]
+    },
+    knock_again: {
+        lines: [
+            "急促的敲击声后，里面的人依旧无动于衷。身后似乎有什么东西盯着你了。"
+        ],
+        options: [
+            { text: "回到门前重新选择", next: "street", goDirectlyToChoice: true, sanChange: -10 }
+        ]
+    },
+    call_name: {
+        lines: [
+            "“Ast…”你熟稔地叫出那个陌生的名字，蓝色的瞳孔注视着面前空洞的猫眼，余光撇了眼身后蠕动的黑影，你继续说，“给我开门吧，我知道你会的。”",
+            "“咔哒。”门开了。",
+            "你迫不及待地把脑袋挤进门缝里，自然而然地眯起眼睛想要露出一个笑容。脸上的肌肉很僵硬，你费了些力气，但还是很快重新掌握了自己的身体。",
+            "“Ast—”",
+            "“咚。”你被拉进门，摔在红橡木的地板上，白发少女面无表情地甩上门，居高临下俯视着呲牙咧嘴的你。"
+        ],
+        options: [
+            { text: "重新开始游戏", next: "restart" }
+        ]
+    }
+};
+
+// ====================== 立绘切换 ======================
+function updateAvatar() {
+    const avatarEl = document.getElementById("avatar");
+    let useUrl = "";
+    for (let cfg of avatarConfig) {
+        if (stats.san >= cfg.min && stats.san <= cfg.max) {
+            useUrl = cfg.url;
+            break;
+        }
+    }
+    if (useUrl) {
+        avatarEl.style.backgroundImage = `url('${useUrl}')`;
+        avatarEl.innerText = "";
+    } else {
+        avatarEl.style.backgroundImage = "none";
+        avatarEl.innerText = "角色立绘";
+    }
+}
+
+// ====================== UI 更新 ======================
+function updateUI() {
+    let sanPer = (stats.san / stats.maxSan) * 100;
+    document.getElementById("sanBar").style.width = sanPer + "%";
+    document.getElementById("sanText").innerText = Math.round(stats.san) + " / " + stats.maxSan;
+    
+    const charBox = document.querySelector(".char-box");
+    sanPer < 30 ? charBox.classList.add("san-low") : charBox.classList.remove("san-low");
+    
+    document.getElementById("dayBox").innerText = `Day ${stats.day}`;
+    updateAvatar();
+}
+
+// 显示单行文本
+function showLine() {
+    const sceneEl = document.getElementById("scene");
+    const tipEl = document.getElementById("sceneTip");
+    if (lineIndex < currentLines.length) {
+        sceneEl.innerText = currentLines[lineIndex];
+        tipEl.style.display = "block";
+        isChoosing = false;
+    } else {
+        tipEl.style.display = "none";
+        showOptions();
+    }
+}
+
+// 显示选项
+function showOptions() {
+    isChoosing = true;
+    const data = story[currentSceneKey];
+    const choiceDom = document.getElementById("choice");
+    choiceDom.innerHTML = "";
+
+    data.options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "choice-btn";
+        btn.innerText = opt.text;
+        btn.onclick = () => {
+            if (opt.sanChange !== undefined) {
+                stats.san += opt.sanChange;
+                stats.san = Math.max(0, Math.min(stats.san, stats.maxSan));
+            }
+            updateUI();
+
+            if (opt.next === "restart") {
+                stats = { san:100, maxSan:100, day:1 };
+                updateUI();
+                runScene("start");
+                return;
+            }
+
+            if (opt.goDirectlyToChoice) {
+                currentSceneKey = opt.next;
+                currentLines = [];
+                lineIndex = 9999;
+                showLine();
+            } else {
+                runScene(opt.next);
+            }
+        };
+        choiceDom.appendChild(btn);
+    });
+}
+
+// 进入场景
+function runScene(key) {
+    currentSceneKey = key;
+    const data = story[key];
+    currentLines = data.lines || [];
+    lineIndex = 0;
+    document.getElementById("choice").innerHTML = "";
+    showLine();
+}
+
+// 点击继续
+document.getElementById("scene").addEventListener("click", () => {
+    if (!isChoosing) {
+        lineIndex++;
+        showLine();
+    }
+});
+
+// 开始游戏
+document.getElementById("startBtn").addEventListener("click", () => {
+    document.getElementById("cover").style.display = "none";
+    document.getElementById("game").style.display = "block";
+    updateUI();
+    runScene("start");
+});
+</script>
+</body>
+</html>
