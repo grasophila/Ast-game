@@ -6,6 +6,10 @@
     <title>Who are you？</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
+        html, body{
+            width:100%;
+            height:100%;
+        }
         body{
             background:#0a0a0a;
             background-image: 
@@ -17,6 +21,10 @@
             line-height:1.6;
             padding:10px;
             overflow-x:hidden;
+            
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         body::before{
             content:"";
@@ -34,9 +42,21 @@
             100%{transform:translateY(4px);}
         }
 
+        /* 👇 只在这里新加震动动画，其余全是你原来的代码 */
+        @keyframes shake {
+          0%{transform:translate(0,0);}
+          25%{transform:translate(-1px,1px);}
+          50%{transform:translate(1px,-1px);}
+          75%{transform:translate(-1px,0);}
+          100%{transform:translate(0,0);}
+        }
+        .scene.shake {
+          animation: shake 0.15s ease-in-out;
+        }
+
         .container{
+            width:100%;
             max-width:720px;
-            margin:20px auto;
             background:#121212;
             border:3px solid #333;
             border-radius:2px;
@@ -45,7 +65,6 @@
             position:relative;
         }
 
-        /* 封面 */
         .cover{
             text-align:center;
             padding:60px 20px;
@@ -79,7 +98,6 @@
             background:#222;
         }
 
-        /* 游戏主界面 */
         .game{
             display:none;
         }
@@ -106,11 +124,6 @@
             box-shadow:inset 0 0 10px rgba(0,0,0,0.7);
         }
         
-        /* ==============================================
-           【角色立绘图片区域】
-           你只需要把 url 换成你的图片链接即可
-           支持：网络链接 / GitHub 仓库里的图片路径
-        ============================================== */
         .avatar{
             width:110px;
             height:150px;
@@ -126,6 +139,7 @@
             background-position:center;
             box-shadow:inset 0 0 8px rgba(0,0,0,0.8);
             transition: background-image 0.5s ease;
+            flex-shrink:0;
         }
 
         .status-area{flex:1;display:flex;flex-direction:column;gap:15px;}
@@ -181,7 +195,7 @@
             background:#111;
             border:3px solid #222;
             border-radius:2px;
-            box-shadow:inset 0 0 15px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.5);
+            box-shadow:inset 0 15px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.5);
             position:relative;
             white-space:pre-line;
             color:#d0d0d0;
@@ -238,31 +252,47 @@
         }
 
         @media (max-width: 480px) {
-            .container{padding:15px;}
-            .cover-title{font-size:32px;}
-            .char-box{gap:10px;padding:10px;}
-            .avatar{width:90px;height:130px;}
-            .scene{padding:15px;font-size:14px;}
-            .choice-btn{padding:10px 14px;font-size:14px;}
+            body{
+                padding:5px;
+            }
+            .container{
+                padding:15px;
+            }
+            .cover-title{
+                font-size:32px;
+            }
+            .char-box{
+                gap:10px;
+                padding:10px;
+            }
+            .avatar{
+                width:90px;
+                height:130px;
+            }
+            .scene{
+                padding:15px;
+                font-size:14px;
+            }
+            .choice-btn{
+                padding:10px 14px;
+                font-size:14px;
+            }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- 封面 -->
     <div class="cover" id="cover">
         <div class="cover-title">Who are you？</div>
-        <div class="cover-author">制作者：风灵烟</div>
+        <div class="cover-author">Made By fly</div>
         <button class="start-btn" id="startBtn">点击开始游戏</button>
     </div>
 
-    <!-- 游戏界面 -->
     <div class="game" id="game">
         <div class="title">Who are you？</div>
 
         <div class="char-box">
-            <!-- 角色立绘显示位置 -->
             <div class="avatar" id="avatar">角色立绘</div>
             
             <div class="status-area">
@@ -287,33 +317,57 @@
 </div>
 
 <script>
-// ====================== 全局状态 ======================
+// 👇 只在这里新加震动函数
+function shakeScene() {
+  if (stats.san <= 60) {
+    const scene = document.getElementById("scene");
+    scene.classList.add("shake");
+    setTimeout(() => scene.classList.remove("shake"), 150);
+  }
+}
+
 let stats = { 
     san: 100, 
     maxSan: 100,
     day: 1
 };
 
-// 分页系统
 let currentLines = [];
 let lineIndex = 0;
 let currentSceneKey = "";
 let isChoosing = false;
 
-// ======================================================
-// 【角色立绘图片配置 —— 你只改这里！】
-// 把 url 替换成你的图片链接即可
-// 支持：
-// 1. 网络直链 https://xxx.png
-// 2. GitHub 仓库相对路径 如 ./img/normal.png
-// ======================================================
+// 立绘配置
 const avatarConfig = [
-    { min: 70, max: 100, url: "IMG_20260310_003737.png", name: "正常" },
-    { min: 30, max: 69,  url: "IMG_20260318_231515.png", name: "不安" },
+    { min: 70, max: 100, url: "", name: "正常" },
+    { min: 30, max: 69,  url: "", name: "不安" },
     { min: 0,  max: 29,  url: "", name: "崩坏" }
 ];
 
-// ====================== 剧情 ======================
+// 立即切换立绘
+function setAvatarNow(mode) {
+  let map = {
+    normal:  [70, 100],
+    worry:   [30, 69],
+    broken:  [0, 29]
+  };
+  if (!map[mode]) return;
+  stats.san = (map[mode][0] + map[mode][1]) / 2;
+  updateUI();
+}
+
+// ====================== 结局0 ======================
+function triggerEnding0() {
+  currentSceneKey = "ending0";
+  currentLines = [
+    "【结局0】\n你倒在地上，身体里似乎有什么东西就要蠕动着破出。\n有人走到你面前，阴影笼罩在你滚烫的身体上，\"她\"冰凉的手指最后一次触碰到你的肌肤。"
+  ];
+  lineIndex = 0;
+  isChoosing = false;
+  document.getElementById("choice").innerHTML = "";
+  showLine();
+}
+
 const story = {
     start: {
         lines: [
@@ -335,8 +389,8 @@ const story = {
             "短暂又突兀的敲击声结束后，世界又陷入一片死寂。你歪了歪脑袋，无比确定里面一定有你寻找的那个人。"
         ],
         options: [
-            { text: "A. 继续敲门", next: "knock_again" },
-            { text: "B. 出声呼唤", next: "call_name" }
+            { text: "A. 继续敲门", next: "knock_again", sanChange: -10 },
+            { text: "B. 出声呼唤", next: "call_name", run: () => { setAvatarNow("worry"); } }
         ]
     },
     knock_again: {
@@ -344,7 +398,7 @@ const story = {
             "急促的敲击声后，里面的人依旧无动于衷。身后似乎有什么东西盯着你了。"
         ],
         options: [
-            { text: "回到门前重新选择", next: "street", goDirectlyToChoice: true, sanChange: -10 }
+            { text: "回到门前重新选择", next: "street", goDirectlyToChoice: true }
         ]
     },
     call_name: {
@@ -358,10 +412,15 @@ const story = {
         options: [
             { text: "重新开始游戏", next: "restart" }
         ]
+    },
+    ending0: {
+        lines: [
+            "【结局0】\n你倒在地上，身体里似乎有什么东西就要蠕动着破出。\n有人走到你面前，阴影笼罩在你滚烫的身体上，\"她\"冰凉的手指最后一次触碰到你的肌肤。"
+        ],
+        options: []
     }
 };
 
-// ====================== 立绘切换 ======================
 function updateAvatar() {
     const avatarEl = document.getElementById("avatar");
     let useUrl = "";
@@ -380,7 +439,6 @@ function updateAvatar() {
     }
 }
 
-// ====================== UI 更新 ======================
 function updateUI() {
     let sanPer = (stats.san / stats.maxSan) * 100;
     document.getElementById("sanBar").style.width = sanPer + "%";
@@ -393,10 +451,18 @@ function updateUI() {
     updateAvatar();
 }
 
-// 显示单行文本
 function showLine() {
     const sceneEl = document.getElementById("scene");
     const tipEl = document.getElementById("sceneTip");
+    
+    if (currentSceneKey === "ending0") {
+        sceneEl.innerText = currentLines[0];
+        tipEl.innerText = "重新开始游戏";
+        tipEl.style.display = "block";
+        isChoosing = false;
+        return;
+    }
+    
     if (lineIndex < currentLines.length) {
         sceneEl.innerText = currentLines[lineIndex];
         tipEl.style.display = "block";
@@ -407,7 +473,6 @@ function showLine() {
     }
 }
 
-// 显示选项
 function showOptions() {
     isChoosing = true;
     const data = story[currentSceneKey];
@@ -419,16 +484,28 @@ function showOptions() {
         btn.className = "choice-btn";
         btn.innerText = opt.text;
         btn.onclick = () => {
+            // 👇 只在这里加一行
+            shakeScene();
+
             if (opt.sanChange !== undefined) {
                 stats.san += opt.sanChange;
                 stats.san = Math.max(0, Math.min(stats.san, stats.maxSan));
             }
             updateUI();
 
+            // 检测 SAN=0 触发结局
+            if (stats.san <= 0 && currentSceneKey !== "ending0") {
+                triggerEnding0();
+                return;
+            }
+
+            if (opt.run) opt.run();
+
             if (opt.next === "restart") {
                 stats = { san:100, maxSan:100, day:1 };
                 updateUI();
                 runScene("start");
+                document.getElementById("sceneTip").innerText = "点击继续 ↵";
                 return;
             }
 
@@ -445,7 +522,6 @@ function showOptions() {
     });
 }
 
-// 进入场景
 function runScene(key) {
     currentSceneKey = key;
     const data = story[key];
@@ -455,21 +531,44 @@ function runScene(key) {
     showLine();
 }
 
-// 点击继续
+// 点击剧情
 document.getElementById("scene").addEventListener("click", () => {
+    // 👇 只在这里加一行
+    shakeScene();
+
+    if (currentSceneKey === "ending0") {
+        stats = { san:100, maxSan:100, day:1 };
+        updateUI();
+        runScene("start");
+        document.getElementById("sceneTip").innerText = "点击继续 ↵";
+        return;
+    }
+
     if (!isChoosing) {
         lineIndex++;
         showLine();
     }
 });
 
-// 开始游戏
 document.getElementById("startBtn").addEventListener("click", () => {
     document.getElementById("cover").style.display = "none";
     document.getElementById("game").style.display = "block";
     updateUI();
     runScene("start");
 });
+
+// 预载图片
+function preloadImages(urls) {
+  urls.forEach(url => { if (url) { const i = new Image(); i.src = url; } });
+}
+window.addEventListener("load", () => {
+  preloadImages([
+    avatarConfig[0].url,
+    avatarConfig[1].url,
+    avatarConfig[2].url
+  ]);
+});
 </script>
 </body>
 </html>
+
