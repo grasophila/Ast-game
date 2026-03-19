@@ -317,7 +317,7 @@
 </div>
 
 <script>
-// 👇 只在这里新加震动函数
+// 新加震动函数
 function shakeScene() {
   if (stats.san <= 60) {
     const scene = document.getElementById("scene");
@@ -339,9 +339,9 @@ let isChoosing = false;
 
 // 立绘配置
 const avatarConfig = [
-    { min: 70, max: 100, url: "", name: "正常" },
-    { min: 30, max: 69,  url: "", name: "不安" },
-    { min: 0,  max: 29,  url: "", name: "崩坏" }
+    { min: 70, max: 100, url: "IMG_20260310_003737.png", name: "正常" },
+    { min: 30, max: 69,  url: "IMG_20260318_231515.png", name: "不安" },
+    { min: 0,  max: 29,  url: "IMG_20260319_175911.png", name: "崩坏" }
 ];
 
 // 立即切换立绘
@@ -561,13 +561,14 @@ document.getElementById("startBtn").addEventListener("click", () => {
 function preloadImages(urls) {
   urls.forEach(url => { if (url) { const i = new Image(); i.src = url; } });
 }
-window.addEventListener("load", () => {
-  preloadImages([
-    avatarConfig[0].url,
-    avatarConfig[1].url,
-    avatarConfig[2].url
-  ]);
-});
+window.addEventListener('load', function() {
+   preloadImages([
+     'IMG_20260310_003737.png',
+     'IMG_20260318_231515.png',
+     'IMG_20260319_175911.png',
+     'IMG_20260319_175813.png'
+   ]);
+ });
 </script>
 </body>
 </html>
