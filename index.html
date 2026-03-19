@@ -556,18 +556,6 @@ document.getElementById("startBtn").addEventListener("click", () => {
     updateUI();
     runScene("start");
 });
-
-// 预载图片
-function preloadImages(urls) {
-  urls.forEach(url => { if (url) { const i = new Image(); i.src = url; } });
-}
-window.addEventListener('load', function() {
-   preloadImages([
-     'IMG_20260310_003737.png',
-     'IMG_20260318_231515.png',
-     'IMG_20260319_175911.png'
-   ]);
- });
 </script>
 </body>
 </html>
