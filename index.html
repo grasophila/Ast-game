@@ -305,7 +305,7 @@
                 </div>
                 <div class="status-item">
                     <div class="status-name">DAYS</div>
-                    <div class="dayBox" id="dayBox">Day 1</div>
+                    <div class="day-box" id="dayBox">Day 1</div>
                 </div>
             </div>
         </div>
@@ -421,17 +421,22 @@ const story = {
     }
 };
 
-// ========== 只修改了这里，修复立绘显示 ==========
 function updateAvatar() {
     const avatarEl = document.getElementById("avatar");
-    if (stats.san >= 70) {
-        avatarEl.style.backgroundImage = `url('${avatarConfig[0].url}')`;
-    } else if (stats.san >= 30) {
-        avatarEl.style.backgroundImage = `url('${avatarConfig[1].url}')`;
-    } else {
-        avatarEl.style.backgroundImage = `url('${avatarConfig[2].url}')`;
+    let useUrl = "";
+    for (let cfg of avatarConfig) {
+        if (stats.san >= cfg.min && stats.san <= cfg.max) {
+            useUrl = cfg.url;
+            break;
+        }
     }
-    avatarEl.innerText = "";
+    if (useUrl) {
+        avatarEl.style.backgroundImage = `url('${useUrl}')`;
+        avatarEl.innerText = "";
+    } else {
+        avatarEl.style.backgroundImage = "none";
+        avatarEl.innerText = "";
+    }
 }
 
 function updateUI() {
@@ -551,20 +556,11 @@ document.getElementById("startBtn").addEventListener("click", () => {
     updateUI();
     runScene("start");
 });
-// 预载图片
-function preloadImages(urls) {
-  urls.forEach(url => { if (url) { const i = new Image(); i.src = url; } });
-}
-window.addEventListener('load', function() {
-   preloadImages([
-     'IMG_20260310_003737.png',
-     'IMG_20260318_231515.png',
-     'IMG_20260319_175911.png'
-   ]);
- });
 </script>
 </body>
 </html>
+
+豆包，这个代码现在出现一个问题，我将图片链接插入后仍无法正常显示立绘图片，你帮我查一下问题出在哪
 
 
 
