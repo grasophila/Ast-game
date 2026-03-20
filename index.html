@@ -21,7 +21,6 @@
             line-height:1.6;
             padding:10px;
             overflow-x:hidden;
-            
             display: flex;
             align-items: center;
             justify-content: center;
@@ -41,19 +40,16 @@
             0%{transform:translateY(0);}
             100%{transform:translateY(4px);}
         }
-
-        /* 👇 只在这里新加震动动画，其余全是你原来的代码 */
         @keyframes shake {
-          0%{transform:translate(0,0);}
-          25%{transform:translate(-1px,1px);}
-          50%{transform:translate(1px,-1px);}
-          75%{transform:translate(-1px,0);}
-          100%{transform:translate(0,0);}
+            0%{transform:translate(0,0);}
+            25%{transform:translate(-1px,1px);}
+            50%{transform:translate(1px,-1px);}
+            75%{transform:translate(-1px,0);}
+            100%{transform:translate(0,0);}
         }
         .scene.shake {
-          animation: shake 0.15s ease-in-out;
+            animation: shake 0.15s ease-in-out;
         }
-
         .container{
             width:100%;
             max-width:720px;
@@ -64,7 +60,6 @@
             box-shadow:0 0 20px rgba(0,0,0,0.9), inset 0 0 30px rgba(0,0,0,0.6);
             position:relative;
         }
-
         .cover{
             text-align:center;
             padding:60px 20px;
@@ -97,7 +92,6 @@
             color:#fff;
             background:#222;
         }
-
         .game{
             display:none;
         }
@@ -111,7 +105,6 @@
             padding-bottom:10px;
             letter-spacing:2px;
         }
-
         .char-box{
             display:flex;
             align-items:center;
@@ -123,7 +116,6 @@
             border-radius:2px;
             box-shadow:inset 0 0 10px rgba(0,0,0,0.7);
         }
-        
         .avatar{
             width:110px;
             height:150px;
@@ -141,7 +133,6 @@
             transition: background-image 0.5s ease;
             flex-shrink:0;
         }
-
         .status-area{flex:1;display:flex;flex-direction:column;gap:15px;}
         .status-item{width:100%;}
         .status-name{
@@ -186,7 +177,6 @@
             text-align:right;
             margin-top:4px;
         }
-
         .scene{
             margin:20px 0;
             font-size:15px;
@@ -208,7 +198,6 @@
             margin-top:-10px;
             margin-bottom:10px;
         }
-
         .choice-box{
             margin-top:25px;
             display:flex;
@@ -241,7 +230,6 @@
             border-color:#444;
             transform:translateY(1px);
         }
-
         .san-low .san-bar-fill{
             background:linear-gradient(90deg, #600, #a00);
             box-shadow:0 0 8px rgba(200,0,0,0.4);
@@ -250,37 +238,21 @@
             color:#c00;
             font-weight:bold;
         }
-
         @media (max-width: 480px) {
-            body{
-                padding:5px;
-            }
-            .container{
-                padding:15px;
-            }
-            .cover-title{
-                font-size:32px;
-            }
-            .char-box{
-                gap:10px;
-                padding:10px;
-            }
-            .avatar{
-                width:90px;
-                height:130px;
-            }
-            .scene{
-                padding:15px;
-                font-size:14px;
-            }
-            .choice-btn{
-                padding:10px 14px;
-                font-size:14px;
-            }
+            body{padding:5px;}
+            .container{padding:15px;}
+            .cover-title{font-size:32px;}
+            .char-box{gap:10px;padding:10px;}
+            .avatar{width:90px;height:130px;}
+            .scene{padding:15px;font-size:14px;}
+            .choice-btn{padding:10px 14px;font-size:14px;}
         }
     </style>
 </head>
 <body>
+
+<!-- 背景音乐：标准闭合标签，GitHub 兼容 -->
+<audio id="bgm" loop>
 
 <div class="container">
     <div class="cover" id="cover">
@@ -291,16 +263,12 @@
 
     <div class="game" id="game">
         <div class="title">Who are you？</div>
-
         <div class="char-box">
             <div class="avatar" id="avatar">角色立绘</div>
-            
             <div class="status-area">
                 <div class="status-item">
                     <div class="status-name">SANITY</div>
-                    <div class="bar-bg">
-                        <div class="san-bar-fill" id="sanBar"></div>
-                    </div>
+                    <div class="bar-bg"><div class="san-bar-fill" id="sanBar"></div></div>
                     <div class="status-text" id="sanText">100 / 100</div>
                 </div>
                 <div class="status-item">
@@ -309,7 +277,6 @@
                 </div>
             </div>
         </div>
-
         <div id="scene" class="scene"></div>
         <div class="scene-tip" id="sceneTip">点击继续 ↵</div>
         <div id="choice" class="choice-box"></div>
@@ -317,7 +284,7 @@
 </div>
 
 <script>
-// 新加震动函数
+// 震动效果
 function shakeScene() {
   if (stats.san <= 60) {
     const scene = document.getElementById("scene");
@@ -326,42 +293,33 @@ function shakeScene() {
   }
 }
 
-let stats = { 
-    san: 100, 
-    maxSan: 100,
-    day: 1
-};
+// BGM 设置（GitHub 可用）
+const bgm = document.getElementById("bgm");
+bgm.src = "bgm.mp3"; // 把你的音乐放在同目录，或填在线直链
+bgm.volume = 0.5;
 
+let stats = { san: 100, maxSan: 100, day: 1 };
 let currentLines = [];
 let lineIndex = 0;
 let currentSceneKey = "";
 let isChoosing = false;
 
-// 立绘配置
 const avatarConfig = [
-    { min: 70, max: 100, url: "IMG_20260310_003737.png", name: "正常" },
-    { min: 30, max: 69,  url: "IMG_20260318_231515.png", name: "不安" },
-    { min: 0,  max: 29,  url: "IMG_20260319_175911.png", name: "崩坏" }
+    { min:70, max:100, url:"IMG_20260310_003737.png" },
+    { min:30, max:69,  url:"IMG_20260318_231515.png" },
+    { min:0,  max:29,  url:"IMG_20260319_175911.png" }
 ];
 
-// 立即切换立绘
 function setAvatarNow(mode) {
-  let map = {
-    normal:  [70, 100],
-    worry:   [30, 69],
-    broken:  [0, 29]
-  };
+  const map = { normal:[70,100], worry:[30,69], broken:[0,29] };
   if (!map[mode]) return;
   stats.san = (map[mode][0] + map[mode][1]) / 2;
   updateUI();
 }
 
-// ====================== 结局0 ======================
 function triggerEnding0() {
   currentSceneKey = "ending0";
-  currentLines = [
-    "【结局0】\n你倒在地上，身体里似乎有什么东西就要蠕动着破出。\n有人走到你面前，阴影笼罩在你滚烫的身体上，\"她\"冰凉的手指最后一次触碰到你的肌肤。"
-  ];
+  currentLines = ["【结局0】\n你倒在地上，身体里似乎有什么东西就要蠕动着破出。\n有人走到你面前，阴影笼罩在你滚烫的身体上，\"她\"冰凉的手指最后一次触碰到你的肌肤。"];
   lineIndex = 0;
   isChoosing = false;
   document.getElementById("choice").innerHTML = "";
@@ -375,9 +333,7 @@ const story = {
             "你试探性在房间里摸索，没走几步便撞到墙，吃痛扭过身后后腰却不幸地撞上金属门把手。",
             "你呲牙咧嘴地伸手去摸把手，轻轻一拧后便猝不及防地从房间里摔出。踉跄几下后，你直起身。"
         ],
-        options: [
-            { text: "继续向前走", next: "street" }
-        ]
+        options: [{ text:"继续向前走", next:"street" }]
     },
     street: {
         lines: [
@@ -389,17 +345,13 @@ const story = {
             "短暂又突兀的敲击声结束后，世界又陷入一片死寂。你歪了歪脑袋，无比确定里面一定有你寻找的那个人。"
         ],
         options: [
-            { text: "A. 继续敲门", next: "knock_again", sanChange: -10 },
-            { text: "B. 出声呼唤", next: "call_name", run: () => { setAvatarNow("worry"); } }
+            { text:"A. 继续敲门", next:"knock_again", sanChange:-10 },
+            { text:"B. 出声呼唤", next:"call_name", run:()=>setAvatarNow("worry") }
         ]
     },
     knock_again: {
-        lines: [
-            "急促的敲击声后，里面的人依旧无动于衷。身后似乎有什么东西盯着你了。"
-        ],
-        options: [
-            { text: "回到门前重新选择", next: "street", goDirectlyToChoice: true }
-        ]
+        lines: ["急促的敲击声后，里面的人依旧无动于衷。身后似乎有什么东西盯着你了。"],
+        options: [{ text:"回到门前重新选择", next:"street", goDirectlyToChoice:true }]
     },
     call_name: {
         lines: [
@@ -409,44 +361,31 @@ const story = {
             "“Ast—”",
             "“咚。”你被拉进门，摔在红橡木的地板上，白发少女面无表情地甩上门，居高临下俯视着呲牙咧嘴的你。"
         ],
-        options: [
-            { text: "重新开始游戏", next: "restart" }
-        ]
+        options: [{ text:"重新开始游戏", next:"restart" }]
     },
     ending0: {
-        lines: [
-            "【结局0】\n你倒在地上，身体里似乎有什么东西就要蠕动着破出。\n有人走到你面前，阴影笼罩在你滚烫的身体上，\"她\"冰凉的手指最后一次触碰到你的肌肤。"
-        ],
+        lines: ["【结局0】\n你倒在地上，身体里似乎有什么东西就要蠕动着破出。\n有人走到你面前，阴影笼罩在你滚烫的身体上，\"她\"冰凉的手指最后一次触碰到你的肌肤。"],
         options: []
     }
 };
 
 function updateAvatar() {
     const avatarEl = document.getElementById("avatar");
-    let useUrl = "";
     for (let cfg of avatarConfig) {
         if (stats.san >= cfg.min && stats.san <= cfg.max) {
-            useUrl = cfg.url;
-            break;
+            avatarEl.style.backgroundImage = `url('${cfg.url}')`;
+            avatarEl.innerText = "";
+            return;
         }
-    }
-    if (useUrl) {
-        avatarEl.style.backgroundImage = `url('${useUrl}')`;
-        avatarEl.innerText = "";
-    } else {
-        avatarEl.style.backgroundImage = "none";
-        avatarEl.innerText = "";
     }
 }
 
 function updateUI() {
-    let sanPer = (stats.san / stats.maxSan) * 100;
+    const sanPer = (stats.san / stats.maxSan) * 100;
     document.getElementById("sanBar").style.width = sanPer + "%";
     document.getElementById("sanText").innerText = Math.round(stats.san) + " / " + stats.maxSan;
-    
-    const charBox = document.querySelector(".char-box");
-    sanPer < 30 ? charBox.classList.add("san-low") : charBox.classList.remove("san-low");
-    
+    const box = document.querySelector(".char-box");
+    sanPer < 30 ? box.classList.add("san-low") : box.classList.remove("san-low");
     document.getElementById("dayBox").innerText = `Day ${stats.day}`;
     updateAvatar();
 }
@@ -454,7 +393,6 @@ function updateUI() {
 function showLine() {
     const sceneEl = document.getElementById("scene");
     const tipEl = document.getElementById("sceneTip");
-    
     if (currentSceneKey === "ending0") {
         sceneEl.innerText = currentLines[0];
         tipEl.innerText = "重新开始游戏";
@@ -462,7 +400,6 @@ function showLine() {
         isChoosing = false;
         return;
     }
-    
     if (lineIndex < currentLines.length) {
         sceneEl.innerText = currentLines[lineIndex];
         tipEl.style.display = "block";
@@ -475,32 +412,24 @@ function showLine() {
 
 function showOptions() {
     isChoosing = true;
-    const data = story[currentSceneKey];
     const choiceDom = document.getElementById("choice");
     choiceDom.innerHTML = "";
-
-    data.options.forEach(opt => {
+    story[currentSceneKey].options.forEach(opt => {
         const btn = document.createElement("button");
         btn.className = "choice-btn";
         btn.innerText = opt.text;
         btn.onclick = () => {
-            // 👇 只在这里加一行
             shakeScene();
-
             if (opt.sanChange !== undefined) {
                 stats.san += opt.sanChange;
                 stats.san = Math.max(0, Math.min(stats.san, stats.maxSan));
             }
             updateUI();
-
-            // 检测 SAN=0 触发结局
             if (stats.san <= 0 && currentSceneKey !== "ending0") {
                 triggerEnding0();
                 return;
             }
-
             if (opt.run) opt.run();
-
             if (opt.next === "restart") {
                 stats = { san:100, maxSan:100, day:1 };
                 updateUI();
@@ -508,15 +437,7 @@ function showOptions() {
                 document.getElementById("sceneTip").innerText = "点击继续 ↵";
                 return;
             }
-
-            if (opt.goDirectlyToChoice) {
-                currentSceneKey = opt.next;
-                currentLines = [];
-                lineIndex = 9999;
-                showLine();
-            } else {
-                runScene(opt.next);
-            }
+            opt.goDirectlyToChoice ? (currentSceneKey = opt.next, currentLines = [], lineIndex=9999, showLine()) : runScene(opt.next);
         };
         choiceDom.appendChild(btn);
     });
@@ -524,18 +445,14 @@ function showOptions() {
 
 function runScene(key) {
     currentSceneKey = key;
-    const data = story[key];
-    currentLines = data.lines || [];
+    currentLines = story[key].lines || [];
     lineIndex = 0;
     document.getElementById("choice").innerHTML = "";
     showLine();
 }
 
-// 点击剧情
 document.getElementById("scene").addEventListener("click", () => {
-    // 👇 只在这里加一行
     shakeScene();
-
     if (currentSceneKey === "ending0") {
         stats = { san:100, maxSan:100, day:1 };
         updateUI();
@@ -543,14 +460,12 @@ document.getElementById("scene").addEventListener("click", () => {
         document.getElementById("sceneTip").innerText = "点击继续 ↵";
         return;
     }
-
-    if (!isChoosing) {
-        lineIndex++;
-        showLine();
-    }
+    if (!isChoosing) { lineIndex++; showLine(); }
 });
 
+// 开始游戏 + 播放音乐（修复版）
 document.getElementById("startBtn").addEventListener("click", () => {
+    bgm.play().catch(e => console.log("音乐需用户交互触发", e));
     document.getElementById("cover").style.display = "none";
     document.getElementById("game").style.display = "block";
     updateUI();
@@ -559,6 +474,7 @@ document.getElementById("startBtn").addEventListener("click", () => {
 </script>
 </body>
 </html>
+
 
 
 
