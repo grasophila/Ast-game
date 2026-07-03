@@ -383,17 +383,9 @@ const story = {
 };
 
 function sanColor(pct) {
-    if (pct > 60) {
-        const t = (pct - 60) / 40;
-        const r = Math.round(68 + t * (68 - 68));
-        return `linear-gradient(90deg, #444, #${Math.round(68+t*30).toString(16)}${Math.round(68+t*30).toString(16)}${Math.round(68+t*30).toString(16)})`;
-    }
-    if (pct > 30) {
-        const t = (pct - 30) / 30;
-        const g = Math.round(t * 68);
-        return `linear-gradient(90deg, #440000, #${Math.round(t*68).toString(16).padStart(2,'0')}${Math.round(t*44).toString(16).padStart(2,'0')}00)`;
-    }
-    return `linear-gradient(90deg, #600, #a00)`;
+    if (pct > 60) return "linear-gradient(90deg, #444, #666)";
+    if (pct > 30) return "linear-gradient(90deg, #553300, #886600)";
+    return "linear-gradient(90deg, #600, #a00)";
 }
 
 function updateUI() {
