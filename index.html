@@ -266,13 +266,13 @@
 <body>
 
 <audio id="bgm" src="bgm.mp3" loop preload="auto"></audio>
-<button class="bgm-btn" id="bgmBtn" title="音乐开关">♪</button>
+<button class="bgm-btn" id="bgmBtn" onclick="toggleBgm()" title="音乐开关">♪</button>
 
 <div class="container">
     <div class="cover" id="cover">
         <div class="cover-title">Who are you？</div>
         <div class="cover-author">Made By fly</div>
-        <button class="start-btn" id="startBtn">点击开始游戏</button>
+        <button class="start-btn" id="startBtn" onclick="startGame()">点击开始游戏</button>
     </div>
 
     <div class="game" id="game">
@@ -533,30 +533,33 @@ document.getElementById("scene").addEventListener("click", () => {
 });
 
 const bgm = document.getElementById("bgm");
-const bgmBtn = document.getElementById("bgmBtn");
 let bgmOn = false;
 
-bgmBtn.addEventListener("click", () => {
+function toggleBgm() {
+    const btn = document.getElementById("bgmBtn");
     if (bgmOn) {
         bgm.pause();
         bgmOn = false;
-        bgmBtn.textContent = "♪";
-        bgmBtn.style.color = "#555";
+        btn.textContent = "♪";
+        btn.style.color = "#555";
     } else {
         bgm.play();
         bgmOn = true;
-        bgmBtn.textContent = "♫";
-        bgmBtn.style.color = "#ccc";
+        btn.textContent = "♫";
+        btn.style.color = "#ccc";
     }
-});
+}
 
-document.getElementById("startBtn").addEventListener("click", () => {
+function startGame() {
     document.getElementById("cover").style.display = "none";
     document.getElementById("game").style.display = "block";
     updateUI();
     runScene("start");
-    bgm.play().then(() => { bgmOn = true; bgmBtn.textContent = "♫"; }).catch(() => {});
-});
+    bgm.play().then(() => {
+        bgmOn = true;
+        document.getElementById("bgmBtn").textContent = "♫";
+    }).catch(() => {});
+}
 </script>
 </body>
 </html>
