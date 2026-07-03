@@ -6,13 +6,10 @@
     <title>Who are you？</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
-        html, body{
-            width:100%;
-            height:100%;
-        }
+        html, body{width:100%;height:100%;}
         body{
             background:#0a0a0a;
-            background-image: 
+            background-image:
                 radial-gradient(#1a1a1a 1px, transparent 1px),
                 linear-gradient(rgba(10,10,10,0.8) 1px, transparent 1px);
             background-size: 4px 4px, 100% 2px;
@@ -21,7 +18,6 @@
             line-height:1.6;
             padding:10px;
             overflow-x:hidden;
-            
             display: flex;
             align-items: center;
             justify-content: center;
@@ -41,17 +37,15 @@
             0%{transform:translateY(0);}
             100%{transform:translateY(4px);}
         }
-
-        /* 👇 只在这里新加震动动画，其余全是你原来的代码 */
         @keyframes shake {
-          0%{transform:translate(0,0);}
-          25%{transform:translate(-1px,1px);}
-          50%{transform:translate(1px,-1px);}
-          75%{transform:translate(-1px,0);}
-          100%{transform:translate(0,0);}
+            0%,100%{transform:translate(0,0);}
+            20%{transform:translate(-2px,1px);}
+            40%{transform:translate(2px,-1px);}
+            60%{transform:translate(-1px,2px);}
+            80%{transform:translate(1px,-2px);}
         }
         .scene.shake {
-          animation: shake 0.15s ease-in-out;
+            animation: shake 0.25s ease-in-out;
         }
 
         .container{
@@ -68,7 +62,6 @@
         .cover{
             text-align:center;
             padding:60px 20px;
-            display:block;
         }
         .cover-title{
             font-size:40px;
@@ -98,9 +91,7 @@
             background:#222;
         }
 
-        .game{
-            display:none;
-        }
+        .game{display:none;}
         .title{
             text-align:center;
             font-size:26px;
@@ -123,7 +114,6 @@
             border-radius:2px;
             box-shadow:inset 0 0 10px rgba(0,0,0,0.7);
         }
-        
         .avatar{
             width:110px;
             height:150px;
@@ -163,8 +153,7 @@
         .san-bar-fill{
             height:100%;
             width:100%;
-            background:linear-gradient(90deg, #444, #666);
-            transition:width 0.3s ease, background 0.3s ease;
+            transition:width 0.4s ease, background-color 0.4s ease;
         }
         .day-box{
             width:100%;
@@ -185,6 +174,7 @@
             color:#888;
             text-align:right;
             margin-top:4px;
+            transition:color 0.4s ease;
         }
 
         .scene{
@@ -200,6 +190,7 @@
             white-space:pre-line;
             color:#d0d0d0;
             letter-spacing:0.5px;
+            cursor:pointer;
         }
         .scene-tip{
             text-align:center;
@@ -242,41 +233,14 @@
             transform:translateY(1px);
         }
 
-        .san-low .san-bar-fill{
-            background:linear-gradient(90deg, #600, #a00);
-            box-shadow:0 0 8px rgba(200,0,0,0.4);
-        }
-        .san-low .status-text{
-            color:#c00;
-            font-weight:bold;
-        }
-
         @media (max-width: 480px) {
-            body{
-                padding:5px;
-            }
-            .container{
-                padding:15px;
-            }
-            .cover-title{
-                font-size:32px;
-            }
-            .char-box{
-                gap:10px;
-                padding:10px;
-            }
-            .avatar{
-                width:90px;
-                height:130px;
-            }
-            .scene{
-                padding:15px;
-                font-size:14px;
-            }
-            .choice-btn{
-                padding:10px 14px;
-                font-size:14px;
-            }
+            body{padding:5px;}
+            .container{padding:15px;}
+            .cover-title{font-size:32px;}
+            .char-box{gap:10px;padding:10px;}
+            .avatar{width:90px;height:130px;}
+            .scene{padding:15px;font-size:14px;}
+            .choice-btn{padding:10px 14px;font-size:14px;}
         }
     </style>
 </head>
@@ -293,8 +257,7 @@
         <div class="title">Who are you？</div>
 
         <div class="char-box">
-            <div class="avatar" id="avatar">角色立绘</div>
-            
+            <div class="avatar" id="avatar"></div>
             <div class="status-area">
                 <div class="status-item">
                     <div class="status-name">SANITY</div>
@@ -317,56 +280,19 @@
 </div>
 
 <script>
-// 新加震动函数
-function shakeScene() {
-  if (stats.san <= 60) {
-    const scene = document.getElementById("scene");
-    scene.classList.add("shake");
-    setTimeout(() => scene.classList.remove("shake"), 150);
-  }
-}
-
-let stats = { 
-    san: 100, 
-    maxSan: 100,
-    day: 1
-};
-
+let stats = { san: 100, maxSan: 100, day: 1 };
 let currentLines = [];
 let lineIndex = 0;
 let currentSceneKey = "";
 let isChoosing = false;
+let isTyping = false;
+let typeTimer = null;
 
-// 立绘配置
 const avatarConfig = [
-    { min: 70, max: 100, url: "IMG_20260310_003737.png", name: "正常" },
-    { min: 30, max: 69,  url: "IMG_20260318_231515.png", name: "不安" },
-    { min: 0,  max: 29,  url: "IMG_20260319_175911.png", name: "崩坏" }
+    { min: 70, max: 100, url: "IMG_20260310_003737.png" },
+    { min: 30, max: 69,  url: "IMG_20260318_231515.png" },
+    { min: 0,  max: 29,  url: "IMG_20260319_175911.png" }
 ];
-
-// 立即切换立绘
-function setAvatarNow(mode) {
-  let map = {
-    normal:  [70, 100],
-    worry:   [30, 69],
-    broken:  [0, 29]
-  };
-  if (!map[mode]) return;
-  stats.san = (map[mode][0] + map[mode][1]) / 2;
-  updateUI();
-}
-
-// ====================== 结局0 ======================
-function triggerEnding0() {
-  currentSceneKey = "ending0";
-  currentLines = [
-    "【结局0】\n你倒在地上，身体里似乎有什么东西就要蠕动着破出。\n有人走到你面前，阴影笼罩在你滚烫的身体上，\"她\"冰凉的手指最后一次触碰到你的肌肤。"
-  ];
-  lineIndex = 0;
-  isChoosing = false;
-  document.getElementById("choice").innerHTML = "";
-  showLine();
-}
 
 const story = {
     start: {
@@ -383,31 +309,45 @@ const story = {
         lines: [
             "外面的世界并不比房间里明亮太多，朦胧的月色中，街边仅剩的一盏还在工作的路灯倔强地忽闪着昏黄的灯光。",
             "一阵凉风吹过，你双手插进大衣外套的兜里，漫无目的地在陌生的世界里游荡，口鼻呼出的热气团团上涌，飘忽着遮挡住你的视线。",
-            "扭曲着面目又突然化为精致神情的“人类”从你身旁经过，你僵硬地迈开腿，无视身侧吊在路灯上随风飘动的干尸，在那栋窗户缝隙里透出灯光的房前站定。",
+            "扭曲着面目又突然化为精致神情的"人类"从你身旁经过，你僵硬地迈开腿，无视身侧吊在路灯上随风飘动的干尸，在那栋窗户缝隙里透出灯光的房前站定。",
             "心跳声在你耳边鼓动，你莫名感受到一股理所当然的安心感。你再次呼出一口气。",
             "你伸出手，月光下的手指惨白。咚咚，木质表面的房门被敲响。",
             "短暂又突兀的敲击声结束后，世界又陷入一片死寂。你歪了歪脑袋，无比确定里面一定有你寻找的那个人。"
         ],
         options: [
             { text: "A. 继续敲门", next: "knock_again", sanChange: -10 },
-            { text: "B. 出声呼唤", next: "call_name", run: () => { setAvatarNow("worry"); } }
+            { text: "B. 出声呼唤", next: "call_name", run: () => { stats.san = Math.min(stats.san, 65); } }
         ]
     },
     knock_again: {
         lines: [
-            "急促的敲击声后，里面的人依旧无动于衷。身后似乎有什么东西盯着你了。"
+            "急促的敲击声在寂静里显得格外刺耳。",
+            "没有回应。",
+            "身后有什么东西开始靠近，你听见细碎的、不像是脚步的声音。你的脖颈上起了鸡皮疙瘩，却没有勇气回头。"
         ],
         options: [
-            { text: "回到门前重新选择", next: "street", goDirectlyToChoice: true }
+            { text: "A. 回头看", next: "knock_lookaround", sanChange: -15 },
+            { text: "B. 出声呼唤", next: "call_name", run: () => { stats.san = Math.min(stats.san, 55); } }
+        ]
+    },
+    knock_lookaround: {
+        lines: [
+            "你回过头。",
+            "什么都没有。",
+            "只是空荡荡的街道，和那盏还在忽闪的路灯。",
+            "但你清楚地知道，刚才有什么东西在那里。"
+        ],
+        options: [
+            { text: "出声呼唤", next: "call_name", run: () => { stats.san = Math.min(stats.san, 45); } }
         ]
     },
     call_name: {
         lines: [
-            "“Ast…”你熟稔地叫出那个陌生的名字，蓝色的瞳孔注视着面前空洞的猫眼，余光撇了眼身后蠕动的黑影，你继续说，“给我开门吧，我知道你会的。”",
-            "“咔哒。”门开了。",
+            ""Ast…"你熟稔地叫出那个陌生的名字，蓝色的瞳孔注视着面前空洞的猫眼，余光撇了眼身后蠕动的黑影，你继续说，"给我开门吧，我知道你会的。"",
+            ""咔哒。"门开了。",
             "你迫不及待地把脑袋挤进门缝里，自然而然地眯起眼睛想要露出一个笑容。脸上的肌肉很僵硬，你费了些力气，但还是很快重新掌握了自己的身体。",
-            "“Ast—”",
-            "“咚。”你被拉进门，摔在红橡木的地板上，白发少女面无表情地甩上门，居高临下俯视着呲牙咧嘴的你。"
+            ""Ast—"",
+            ""咚。"你被拉进门，摔在红橡木的地板上，白发少女面无表情地甩上门，居高临下俯视着呲牙咧嘴的你。"
         ],
         options: [
             { text: "重新开始游戏", next: "restart" }
@@ -417,56 +357,92 @@ const story = {
         lines: [
             "【结局0】\n你倒在地上，身体里似乎有什么东西就要蠕动着破出。\n有人走到你面前，阴影笼罩在你滚烫的身体上，\"她\"冰凉的手指最后一次触碰到你的肌肤。"
         ],
-        options: []
+        options: [
+            { text: "重新开始游戏", next: "restart" }
+        ]
     }
 };
 
-function updateAvatar() {
-    const avatarEl = document.getElementById("avatar");
-    let useUrl = "";
-    for (let cfg of avatarConfig) {
-        if (stats.san >= cfg.min && stats.san <= cfg.max) {
-            useUrl = cfg.url;
-            break;
-        }
+function sanColor(pct) {
+    if (pct > 60) {
+        const t = (pct - 60) / 40;
+        const r = Math.round(68 + t * (68 - 68));
+        return `linear-gradient(90deg, #444, #${Math.round(68+t*30).toString(16)}${Math.round(68+t*30).toString(16)}${Math.round(68+t*30).toString(16)})`;
     }
-    if (useUrl) {
-        avatarEl.style.backgroundImage = `url('${useUrl}')`;
-        avatarEl.innerText = "";
-    } else {
-        avatarEl.style.backgroundImage = "none";
-        avatarEl.innerText = "";
+    if (pct > 30) {
+        const t = (pct - 30) / 30;
+        const g = Math.round(t * 68);
+        return `linear-gradient(90deg, #440000, #${Math.round(t*68).toString(16).padStart(2,'0')}${Math.round(t*44).toString(16).padStart(2,'0')}00)`;
     }
+    return `linear-gradient(90deg, #600, #a00)`;
 }
 
 function updateUI() {
-    let sanPer = (stats.san / stats.maxSan) * 100;
-    document.getElementById("sanBar").style.width = sanPer + "%";
-    document.getElementById("sanText").innerText = Math.round(stats.san) + " / " + stats.maxSan;
-    
-    const charBox = document.querySelector(".char-box");
-    sanPer < 30 ? charBox.classList.add("san-low") : charBox.classList.remove("san-low");
-    
-    document.getElementById("dayBox").innerText = `Day ${stats.day}`;
+    const pct = (stats.san / stats.maxSan) * 100;
+    const bar = document.getElementById("sanBar");
+    bar.style.width = pct + "%";
+    bar.style.background = sanColor(pct);
+
+    const txt = document.getElementById("sanText");
+    txt.textContent = Math.round(stats.san) + " / " + stats.maxSan;
+    txt.style.color = pct < 30 ? "#c00" : pct < 60 ? "#a66" : "#888";
+
+    document.getElementById("dayBox").textContent = `Day ${stats.day}`;
     updateAvatar();
+}
+
+function updateAvatar() {
+    const el = document.getElementById("avatar");
+    for (let cfg of avatarConfig) {
+        if (stats.san >= cfg.min && stats.san <= cfg.max) {
+            el.style.backgroundImage = `url('${cfg.url}')`;
+            el.textContent = "";
+            return;
+        }
+    }
+}
+
+function shakeScene() {
+    if (stats.san <= 60) {
+        const scene = document.getElementById("scene");
+        scene.classList.remove("shake");
+        void scene.offsetWidth;
+        scene.classList.add("shake");
+        setTimeout(() => scene.classList.remove("shake"), 250);
+    }
+}
+
+function typeText(el, text, cb) {
+    el.textContent = "";
+    isTyping = true;
+    let i = 0;
+    clearInterval(typeTimer);
+    typeTimer = setInterval(() => {
+        el.textContent += text[i++];
+        if (i >= text.length) {
+            clearInterval(typeTimer);
+            isTyping = false;
+            if (cb) cb();
+        }
+    }, 22);
+}
+
+function skipType(el, text, cb) {
+    clearInterval(typeTimer);
+    el.textContent = text;
+    isTyping = false;
+    if (cb) cb();
 }
 
 function showLine() {
     const sceneEl = document.getElementById("scene");
     const tipEl = document.getElementById("sceneTip");
-    
-    if (currentSceneKey === "ending0") {
-        sceneEl.innerText = currentLines[0];
-        tipEl.innerText = "重新开始游戏";
-        tipEl.style.display = "block";
-        isChoosing = false;
-        return;
-    }
-    
+
     if (lineIndex < currentLines.length) {
-        sceneEl.innerText = currentLines[lineIndex];
         tipEl.style.display = "block";
+        tipEl.textContent = "点击继续 ↵";
         isChoosing = false;
+        typeText(sceneEl, currentLines[lineIndex]);
     } else {
         tipEl.style.display = "none";
         showOptions();
@@ -479,44 +455,34 @@ function showOptions() {
     const choiceDom = document.getElementById("choice");
     choiceDom.innerHTML = "";
 
+    if (!data || !data.options.length) return;
+
     data.options.forEach(opt => {
         const btn = document.createElement("button");
         btn.className = "choice-btn";
-        btn.innerText = opt.text;
+        btn.textContent = opt.text;
         btn.onclick = () => {
-            // 👇 只在这里加一行
             shakeScene();
 
-            if (opt.sanChange !== undefined) {
-                stats.san += opt.sanChange;
-                stats.san = Math.max(0, Math.min(stats.san, stats.maxSan));
-            }
-            updateUI();
-
-            // 检测 SAN=0 触发结局
-            if (stats.san <= 0 && currentSceneKey !== "ending0") {
-                triggerEnding0();
-                return;
-            }
-
-            if (opt.run) opt.run();
-
             if (opt.next === "restart") {
-                stats = { san:100, maxSan:100, day:1 };
+                stats = { san: 100, maxSan: 100, day: 1 };
                 updateUI();
                 runScene("start");
-                document.getElementById("sceneTip").innerText = "点击继续 ↵";
                 return;
             }
 
-            if (opt.goDirectlyToChoice) {
-                currentSceneKey = opt.next;
-                currentLines = [];
-                lineIndex = 9999;
-                showLine();
-            } else {
-                runScene(opt.next);
+            if (opt.sanChange !== undefined) {
+                stats.san = Math.max(0, Math.min(stats.maxSan, stats.san + opt.sanChange));
             }
+            if (opt.run) opt.run();
+            updateUI();
+
+            if (stats.san <= 0) {
+                runScene("ending0");
+                return;
+            }
+
+            runScene(opt.next);
         };
         choiceDom.appendChild(btn);
     });
@@ -525,29 +491,26 @@ function showOptions() {
 function runScene(key) {
     currentSceneKey = key;
     const data = story[key];
-    currentLines = data.lines || [];
+    currentLines = data ? (data.lines || []) : [];
     lineIndex = 0;
     document.getElementById("choice").innerHTML = "";
     showLine();
 }
 
-// 点击剧情
 document.getElementById("scene").addEventListener("click", () => {
-    // 👇 只在这里加一行
     shakeScene();
+    if (isChoosing) return;
 
-    if (currentSceneKey === "ending0") {
-        stats = { san:100, maxSan:100, day:1 };
-        updateUI();
-        runScene("start");
-        document.getElementById("sceneTip").innerText = "点击继续 ↵";
+    const sceneEl = document.getElementById("scene");
+    if (isTyping) {
+        skipType(sceneEl, currentLines[lineIndex], () => {
+            document.getElementById("sceneTip").textContent = "点击继续 ↵";
+        });
         return;
     }
 
-    if (!isChoosing) {
-        lineIndex++;
-        showLine();
-    }
+    lineIndex++;
+    showLine();
 });
 
 document.getElementById("startBtn").addEventListener("click", () => {
@@ -559,6 +522,3 @@ document.getElementById("startBtn").addEventListener("click", () => {
 </script>
 </body>
 </html>
-
-
-
