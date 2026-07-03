@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Who are you？</title>
     <style>
+        .bgm-btn{
+            position:fixed;
+            bottom:16px;
+            right:16px;
+            z-index:1000;
+            background:#1a1a1a;
+            border:2px solid #444;
+            color:#ccc;
+            font-size:18px;
+            width:40px;
+            height:40px;
+            border-radius:2px;
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            transition:border-color 0.2s;
+        }
+        .bgm-btn:hover{border-color:#888;}
+    </style>
+    <style>
         *{margin:0;padding:0;box-sizing:border-box;}
         html, body{width:100%;height:100%;}
         body{
@@ -245,6 +266,9 @@
     </style>
 </head>
 <body>
+
+<audio id="bgm" src="bgm.mp3" loop preload="auto"></audio>
+<button class="bgm-btn" id="bgmBtn" title="音乐开关">♪</button>
 
 <div class="container">
     <div class="cover" id="cover">
@@ -510,11 +534,30 @@ document.getElementById("scene").addEventListener("click", () => {
     showLine();
 });
 
+const bgm = document.getElementById("bgm");
+const bgmBtn = document.getElementById("bgmBtn");
+let bgmOn = false;
+
+bgmBtn.addEventListener("click", () => {
+    if (bgmOn) {
+        bgm.pause();
+        bgmOn = false;
+        bgmBtn.textContent = "♪";
+        bgmBtn.style.color = "#555";
+    } else {
+        bgm.play();
+        bgmOn = true;
+        bgmBtn.textContent = "♫";
+        bgmBtn.style.color = "#ccc";
+    }
+});
+
 document.getElementById("startBtn").addEventListener("click", () => {
     document.getElementById("cover").style.display = "none";
     document.getElementById("game").style.display = "block";
     updateUI();
     runScene("start");
+    bgm.play().then(() => { bgmOn = true; bgmBtn.textContent = "♫"; }).catch(() => {});
 });
 </script>
 </body>
